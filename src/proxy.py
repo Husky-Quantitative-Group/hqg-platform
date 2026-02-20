@@ -2,6 +2,8 @@ import json
 import os
 import time
 import urllib.request
+from threading import Lock
+from typing import Any
 
 import httpx
 import jwt
@@ -10,8 +12,12 @@ from fastapi.responses import PlainTextResponse
 
 PROXY_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]
 JWT_REQUIRED_CLAIMS = ["exp", "sub"]
-JWKS_CACHE_TTL_SECONDS = 15 * 60
-_jwks_cache: dict[str, tuple[float, dict]] = {}
+KID_MISS_REFETCH_COOLDOWN_SECONDS = 5 * 60
+JWKS_FETCH_TIMEOUT_SECONDS = 5
+
+_jwks_lock = Lock()
+_jwks_cache: dict[str, dict[str, Any]] = {}
+_last_kid_miss_refetch_at: dict[str, float] = {}
 
 
 async def proxy_request(request: Request, base_url: str, upstream_path: str) -> Response:
@@ -63,8 +69,13 @@ def _is_valid_jwt(token: str, jwks_url: str) -> bool:
         if not kid:
             return False
 
-        keys = (_get_jwks(jwks_url).get("keys") or [])
+        jwks = _get_jwks(jwks_url, force_refresh=False)
+        keys = ((jwks or {}).get("keys") or [])
         jwk = next((key for key in keys if key.get("kid") == kid), None)
+        if not jwk:
+            refreshed_jwks = _get_jwks(jwks_url, force_refresh=True)
+            refreshed_keys = ((refreshed_jwks or {}).get("keys") or [])
+            jwk = next((key for key in refreshed_keys if key.get("kid") == kid), None)
         if not jwk:
             return False
 
@@ -80,21 +91,27 @@ def _is_valid_jwt(token: str, jwks_url: str) -> bool:
         return False
 
 
-def _get_jwks(jwks_url: str) -> dict:
+def _get_jwks(jwks_url: str, force_refresh: bool = True) -> dict[str, Any] | None:
     now = time.monotonic()
-    cached = _jwks_cache.get(jwks_url)
 
-    if cached:
-        fetched_at, jwks = cached
-        if now - fetched_at < JWKS_CACHE_TTL_SECONDS:
-            return jwks
+    with _jwks_lock:
+        cached = _jwks_cache.get(jwks_url)
+        if not force_refresh and cached is not None:
+            return cached
+
+        if force_refresh:
+            last_refresh = _last_kid_miss_refetch_at.get(jwks_url, 0.0)
+            if now - last_refresh < KID_MISS_REFETCH_COOLDOWN_SECONDS:
+                return cached
+            _last_kid_miss_refetch_at[jwks_url] = now
 
     try:
-        with urllib.request.urlopen(jwks_url, timeout=5) as response:
-            jwks = json.loads(response.read().decode("utf-8"))
-            _jwks_cache[jwks_url] = (now, jwks)
-            return jwks
+        with urllib.request.urlopen(jwks_url, timeout=JWKS_FETCH_TIMEOUT_SECONDS) as response:
+            fresh = json.loads(response.read().decode("utf-8"))
     except Exception:
-        if cached:
-            return cached[1]
-        raise
+        with _jwks_lock:
+            return _jwks_cache.get(jwks_url)
+
+    with _jwks_lock:
+        _jwks_cache[jwks_url] = fresh
+    return fresh
