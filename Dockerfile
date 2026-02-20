@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir fastapi httpx uvicorn[standard]
+RUN pip install --no-cache-dir fastapi httpx 'pyjwt[crypto]' uvicorn[standard]
 
 COPY src /app/src
 
