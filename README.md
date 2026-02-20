@@ -1,16 +1,26 @@
 # hqg-platform
 
-`hqg-platform` is a small FastAPI service that sits behind a reverse proxy and route traffic to internal services.
+`hqg-platform` is a small FastAPI service behind a reverse proxy that routes traffic to internal services.
 
-Current scope (initial scaffold):
-- FastAPI app entrypoint in `src/server.py`
-- Health check endpoint at `GET /health` returning `ok`
-- Docker container for running the service on `0.0.0.0:$PORT`
+Current scope:
+- `GET /health` returns `ok` (no auth).
+- `/backtester/*` proxies to `BACKTESTER_BASE_URL` (prefix stripped).
+- `/engine/*` proxies to `ENGINE_BASE_URL` (prefix stripped).
+- For proxied routes, `hqg_auth_token` cookie is required (401 if missing).
+- Proxied requests forward incoming headers/body/query/cookies as-is.
+- Proxy implementation lives in `src/proxy.py` and route wiring in `src/server.py`.
+
+## Configuration
+
+Set these env vars (see `example.env`):
+- `BACKTESTER_BASE_URL` (example: `http://10.0.0.12:8000`)
+- `ENGINE_BASE_URL` (example: `http://10.0.0.13:8000`)
+- `PORT` (default `8080`)
 
 ## Local run
 
 ```bash
-pip install fastapi uvicorn[standard]
+pip install fastapi httpx uvicorn[standard]
 uvicorn src.server:app --host 0.0.0.0 --port 8080
 ```
 
