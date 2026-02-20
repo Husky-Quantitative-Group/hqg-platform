@@ -1,7 +1,7 @@
 import json
 import os
+import time
 import urllib.request
-from functools import lru_cache
 
 import httpx
 import jwt
@@ -10,6 +10,8 @@ from fastapi.responses import PlainTextResponse
 
 PROXY_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]
 JWT_REQUIRED_CLAIMS = ["exp", "sub"]
+JWKS_CACHE_TTL_SECONDS = 15 * 60
+_jwks_cache: dict[str, tuple[float, dict]] = {}
 
 
 async def proxy_request(request: Request, base_url: str, upstream_path: str) -> Response:
@@ -61,15 +63,8 @@ def _is_valid_jwt(token: str, jwks_url: str) -> bool:
         if not kid:
             return False
 
-        jwk = None
-        for refresh in (False, True):
-            keys = (_get_jwks(jwks_url).get("keys") or [])
-            jwk = next((key for key in keys if key.get("kid") == kid), None)
-            if jwk:
-                break
-            if not refresh:
-                _get_jwks.cache_clear()
-
+        keys = (_get_jwks(jwks_url).get("keys") or [])
+        jwk = next((key for key in keys if key.get("kid") == kid), None)
         if not jwk:
             return False
 
@@ -85,7 +80,21 @@ def _is_valid_jwt(token: str, jwks_url: str) -> bool:
         return False
 
 
-@lru_cache(maxsize=4)
-def _get_jwks(jwks_url: str):
-    with urllib.request.urlopen(jwks_url, timeout=5) as response:
-        return json.loads(response.read().decode("utf-8"))
+def _get_jwks(jwks_url: str) -> dict:
+    now = time.monotonic()
+    cached = _jwks_cache.get(jwks_url)
+
+    if cached:
+        fetched_at, jwks = cached
+        if now - fetched_at < JWKS_CACHE_TTL_SECONDS:
+            return jwks
+
+    try:
+        with urllib.request.urlopen(jwks_url, timeout=5) as response:
+            jwks = json.loads(response.read().decode("utf-8"))
+            _jwks_cache[jwks_url] = (now, jwks)
+            return jwks
+    except Exception:
+        if cached:
+            return cached[1]
+        raise

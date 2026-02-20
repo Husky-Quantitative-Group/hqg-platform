@@ -6,9 +6,6 @@ Current scope:
 - `GET /health` returns `ok` (no auth).
 - `/backtester/*` proxies to `BACKTESTER_BASE_URL` (prefix stripped).
 - `/engine/*` proxies to `ENGINE_BASE_URL` (prefix stripped).
-- For proxied routes, `hqg_auth_token` cookie is required and must validate against JWKS (`401` if missing/invalid).
-- Proxied requests forward incoming headers/body/query/cookies as-is.
-- Proxy implementation lives in `src/proxy.py` and route wiring in `src/server.py`.
 
 ## Configuration
 
