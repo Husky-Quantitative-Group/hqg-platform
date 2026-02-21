@@ -14,6 +14,7 @@ PROXY_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]
 JWT_REQUIRED_CLAIMS = ["exp", "sub"]
 KID_MISS_REFETCH_COOLDOWN_SECONDS = 5 * 60
 JWKS_FETCH_TIMEOUT_SECONDS = 5
+UPSTREAM_TIMEOUT_SECONDS = float(os.getenv("HQG_PROXY_UPSTREAM_TIMEOUT_SECONDS", "30"))
 
 _jwks_lock = Lock()
 _jwks_cache: dict[str, dict[str, Any]] = {}
@@ -52,6 +53,7 @@ async def proxy_request(request: Request, base_url: str, upstream_path: str) -> 
                 url=target_url,
                 headers=outbound_headers,
                 content=body,
+                timeout=UPSTREAM_TIMEOUT_SECONDS,
             )
     except httpx.RequestError:
         return PlainTextResponse("Bad Gateway", status_code=502)
