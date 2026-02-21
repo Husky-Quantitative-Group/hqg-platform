@@ -15,22 +15,20 @@ Set these env vars (see `example.env`):
 - `HQG_DASH_JWKS_URL` (example: `https://platform.uconnquant.com/.well-known/jwks.json`)
 - `PORT` (default `8080`)
 
-## Local run
+## Run with Docker Compose
 
 ```bash
-pip install fastapi httpx 'pyjwt[crypto]' uvicorn[standard]
-uvicorn src.server:app --host 0.0.0.0 --port 8080
+docker compose up --build
 ```
 
-Check health:
+Run detached:
 
 ```bash
-curl http://localhost:8080/health
+docker compose up --build -d
 ```
 
-## Docker run
+Stop:
 
 ```bash
-docker build -t hqg-platform .
-docker run --rm -p 8080:8080 -e PORT=8080 hqg-platform
+docker compose down
 ```
