@@ -12,18 +12,14 @@ services:
     env_file:
       - .env
     environment:
-      HTTP_PROXY: ${HTTP_PROXY:-}
-      HTTPS_PROXY: ${HTTPS_PROXY:-}
-      NO_PROXY: ${NO_PROXY:-}
-      http_proxy: ${HTTP_PROXY:-}
-      https_proxy: ${HTTPS_PROXY:-}
-      no_proxy: ${NO_PROXY:-}
       PORT: ${PORT:-8080}
     container_name: hqg-platform
     ports:
       - "${PORT:-8080}:${PORT:-8080}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - hqg_network
     restart: unless-stopped
     healthcheck:
       test:
