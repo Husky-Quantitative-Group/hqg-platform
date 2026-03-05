@@ -1,11 +1,23 @@
 import os
 
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
 from src.proxy import PROXY_METHODS, proxy_request
 
 app = FastAPI(title="hqg-platform")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://dashboard.uconnquant.com",
+        "http://localhost:5173"
+        ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health", response_class=PlainTextResponse)
