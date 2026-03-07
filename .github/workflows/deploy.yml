@@ -36,4 +36,4 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           port: ${{ secrets.VM_PORT }}
-          script: /home/software/deployment/deploy-platform.sh
+          script: /home/software/scripts/deploy-platform.sh
