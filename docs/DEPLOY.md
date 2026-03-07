@@ -56,5 +56,5 @@ echo "[$REPO] Deploy complete."
 If you need to deploy manually, SSH into the VM and run:
 
 ```bash
-bash /opt/deploy/deploy-platform.sh
+bash /home/software/scripts/deploy-platform.sh
 ```
