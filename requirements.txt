@@ -1,0 +1,4 @@
+httpx
+jwt
+fastapi
+pytest
