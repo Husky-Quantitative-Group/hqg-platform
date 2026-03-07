@@ -1,4 +1,4 @@
-httpx
-jwt
 fastapi
-pytest
+httpx
+pyjwt[crypto]
+uvicorn[standard]
