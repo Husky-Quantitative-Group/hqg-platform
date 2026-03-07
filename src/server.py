@@ -58,7 +58,7 @@ async def deploy(service: str, request: Request) -> Response:
 
     path = DEPLOY_SERVICES[service]
     subprocess.Popen(
-        ["bash", "-c", f"cd {path} && git pull && docker compose down && docker compose build && docker compose up -d && docker image prune -f"],
+        ["bash", "-c", f"(cd {path} && git pull && docker compose down && docker compose build && docker compose up -d && docker image prune -f) > /tmp/deploy-{service}.log 2>&1"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
