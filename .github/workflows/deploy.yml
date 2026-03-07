@@ -1,4 +1,4 @@
-name: Platform Test and Deploy
+name: Platform CI/CD
 
 on:
   pull_request:
@@ -36,4 +36,4 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.VM_SSH_KEY }}
           port: ${{ secrets.VM_PORT }}
-          script: /opt/deploy/deploy-engine.sh "${{ secrets.DISCORD_WEBHOOK_URL }}"
+          script: /opt/deploy/deploy-platform.sh

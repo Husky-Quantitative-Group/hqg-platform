@@ -17,7 +17,6 @@ It does the following:
 1. `git pull` latest from `main`
 2. `docker compose up -d --build`
 3. `docker image prune -f`
-4. Posts a Discord notification on success
 
 ## Secrets
 
@@ -29,7 +28,6 @@ Stored as GitHub org-level secrets under `Husky-Quantitative-Group`. No repo-lev
 | `VM_USER` | SSH username |
 | `VM_SSH_KEY` | SSH private key |
 | `VM_PORT` | SSH port |
-| `DISCORD_WEBHOOK_URL` | Deploy notifications |
 
 ## Manual Deploy
 
