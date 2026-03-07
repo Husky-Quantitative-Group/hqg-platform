@@ -29,6 +29,28 @@ Stored as GitHub org-level secrets under `Husky-Quantitative-Group`. No repo-lev
 | `VM_SSH_KEY` | SSH private key |
 | `VM_PORT` | SSH port |
 
+
+## Deployment Script
+```bash
+#!/bin/bash
+set -e
+
+REPO="hqg-platform"
+PATH_TO_REPO="/home/software/$REPO"
+
+echo "[$REPO] Starting deploy..."
+
+cd $PATH_TO_REPO
+git pull
+
+docker compose up -d --build
+docker image prune -f
+
+echo "[$REPO] Deploy complete."
+
+```
+
+
 ## Manual Deploy
 
 If you need to deploy manually, SSH into the VM and run:
