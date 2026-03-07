@@ -47,8 +47,6 @@ async def proxy_backtester(request: Request, upstream_path: str = "") -> Respons
 async def proxy_engine(request: Request, upstream_path: str = "") -> Response:
     return await proxy_request(request, os.getenv("ENGINE_BASE_URL", ""), upstream_path)
 
-
-
 @app.post("/deploy/{service}")
 async def deploy(service: str, request: Request) -> Response:
     auth = request.headers.get("authorization", "")
@@ -60,7 +58,7 @@ async def deploy(service: str, request: Request) -> Response:
 
     path = DEPLOY_SERVICES[service]
     subprocess.Popen(
-        ["bash", "-c", f"cd {path} && git pull && docker compose up -d"],
+        ["bash", "-c", f"cd {path} && git pull && docker compose down && docker compose build && docker compose up -d && docker image prune -f"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
