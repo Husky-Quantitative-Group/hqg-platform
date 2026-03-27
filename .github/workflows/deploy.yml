@@ -1,4 +1,4 @@
-name: Platform — CI/CD
+name: Platform - CI/CD
 
 on:
   pull_request:
@@ -29,11 +29,9 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: SSH into VM and deploy platform stack
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          port: ${{ secrets.VM_PORT }}
-          script: /home/software/scripts/deploy-platform.sh
+      - name: Trigger deploy
+        run: |
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${{ secrets.DEPLOY_SECRET }}" \
+            https://platform.uconnquant.com/deploy/hqg-platform \
+            || { echo "Deploy trigger failed"; exit 1; }
