@@ -86,6 +86,7 @@ def _is_valid_jwt(token: str, jwks_url: str) -> bool:
             token,
             public_key,
             algorithms=["RS256"],
+            leeway=90,
             options={"require": JWT_REQUIRED_CLAIMS},
         )
         return bool(payload.get("sub"))
