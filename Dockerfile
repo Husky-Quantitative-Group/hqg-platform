@@ -1,6 +1,5 @@
 FROM python:3.12-slim
 
-# Allow proxy configuration during build and runtime.
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 ARG NO_PROXY
@@ -20,7 +19,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-RUN pip install --no-cache-dir fastapi httpx 'pyjwt[crypto]' uvicorn[standard]
+RUN apt-get update && apt-get install -y --no-install-recommends git curl docker.io docker-compose && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src /app/src
 

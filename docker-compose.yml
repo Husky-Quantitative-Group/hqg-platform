@@ -18,6 +18,9 @@ services:
       - "${PORT:-8080}:${PORT:-8080}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/software:/home/software
     networks:
       - hqg_network
     restart: unless-stopped
