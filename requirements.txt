@@ -1,0 +1,4 @@
+fastapi
+httpx
+pyjwt[crypto]
+uvicorn[standard]
