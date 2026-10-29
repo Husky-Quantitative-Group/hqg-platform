@@ -123,12 +123,11 @@ jobs:
     env:
       VERSION: ${{ needs.release.outputs.version }}
     steps:
-      # PLACEHOLDER: TBD_APP_ID / TBD_APP_KEY are placeholders until the GitHub App exists.
       - uses: actions/create-github-app-token@v1
         id: app-token
         with:
-          app-id: ${{ vars.TBD_APP_ID }}
-          private-key: ${{ secrets.TBD_APP_KEY }}
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: Husky-Quantitative-Group
           repositories: hqg-deployment
 
